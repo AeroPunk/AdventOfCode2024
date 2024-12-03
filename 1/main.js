@@ -1,12 +1,14 @@
-const { testInput, input } = require('./input');
+import fetchInput from "../fetch-input.mjs";
+
+const input = await fetchInput(2024, 1);
 
 const left = [], right = [];
 let totaldistance = 0;
 
 function processInput(x) {
-  const a = x.split(/\r?\n/);
+  const a = x.trim().split(/\r?\n/);
   a.forEach(line => {
-    lineArray = line.split(/\s+/);
+    const lineArray = line.split(/\s+/);
     left.push(+lineArray[0]);
     right.push(+lineArray[1]);
   });
@@ -19,7 +21,7 @@ processInput(input)
 
 // Part 1
 left.forEach((line, index) => {
-  totaldistance = totaldistance + Math.abs((right[index] - line))
+  totaldistance = totaldistance + Math.abs((right[index] - line));
 });
 
 console.log("Part 1 - Total distance: ", totaldistance)

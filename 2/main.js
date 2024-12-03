@@ -1,7 +1,9 @@
-const { testInput, input } = require('./input');
+import fetchInput from "../fetch-input.mjs";
+
+const input = await fetchInput(2024, 2);
 
 function processInput(x) {
-  return x.split(/\r?\n/).map(report => report.split(/\s+/).map(level => +level));
+  return x.trim().split(/\r?\n/).map(report => report.split(/\s+/).map(level => +level));
 }
 
 const reports = processInput(input)
