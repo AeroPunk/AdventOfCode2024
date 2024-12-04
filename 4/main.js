@@ -98,3 +98,14 @@ for ( let y = 0; y < input.length; y++ ) {
 
 console.log(MAScount);
 
+// Part 2.1 - Shorter but unreadable
+
+let MAScount2 = 0;
+
+for (let y = 0; y < input.length; y++) {
+    for (let x = 0; x < input[y].length; x++) {
+        MAScount2 = ((input[y][x] === 'A') && ((input?.[y - 1]?.[x - 1] === 'M' && input?.[y + 1]?.[x + 1] === 'S') || (input?.[y + 1]?.[x + 1] === 'M' && input?.[y - 1]?.[x - 1] === 'S')) && ((input?.[y - 1]?.[x + 1] === 'M' && input?.[y + 1]?.[x - 1] === 'S') || (input?.[y + 1]?.[x - 1] === 'M' && input?.[y - 1]?.[x + 1] === 'S'))) ? ++MAScount2 : MAScount2;
+    }
+}
+
+console.log(MAScount2);
