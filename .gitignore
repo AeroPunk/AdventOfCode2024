@@ -132,3 +132,6 @@ dist
 # Hide session token
 config.js
 config.mjs
+
+# IntelliJ
+.idea
