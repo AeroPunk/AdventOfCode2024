@@ -21,8 +21,8 @@ function processInput(input) {
 processInput(input)
 
 // Helpers
-function findCommonItems(array1, array2) {
-  return array2.filter(item => array1.includes(item));
+function findCommonItemCount(array1, array2) {
+  return array2.filter(item => array1.includes(item)).length;
 }
 
 // Part 1
@@ -64,7 +64,7 @@ for (let i = 0; i < incorrectLines.length; i++) {
   for (let ii = 0; ii < line.length; ii++) {
     const page = line[ii];
     if (rules?.[page]) {
-      fixedOrder[page] = findCommonItems(rules?.[page], line.toSpliced(ii, 1)).length
+      fixedOrder[page] = findCommonItemCount(rules?.[page], line.toSpliced(ii, 1))
     } else {
       fixedOrder[page] = 0;
     }
