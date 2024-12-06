@@ -1,7 +1,7 @@
 import fetchInput from "../fetch-input.mjs";
 
-// Input
 const realInput = await fetchInput(2024, 6);
+
 const testInput = `....#.....
 .........#
 ..........
@@ -14,22 +14,8 @@ const testInput = `....#.....
 ......#...`
 
 function processInput(input) {
-    input.replace('\^', 'N');
     return input.trim().split(/\r?\n/).map(line => line.split(''));
 }
-
-const inputP1 = processInput(realInput);
-
-// Helpers
-const directionDelta = [
-    [0, -1],
-    [1, 0],
-    [0, 1],
-    [-1, 0]
-]
-
-const maxX = inputP1[0].length;
-const maxY = inputP1.length;
 
 function displayGrid(output) {
     return output.map(line => line.join('')).join('\n');
@@ -39,12 +25,8 @@ function countVisitedSpots(output) {
     return output.reduce((sum, line) => sum + line.filter(x => x === "X").length, 0);
 }
 
-// Part 1
-let guardDirection = 0; //0 - North/Up, 1 - East/Right, 2 - South/down, 3 - West/Left
-let currPos = findStartingPos(inputP1);
-
-function updateGuardDirection(){
-    guardDirection = guardDirection + 1 > 3 ? 0 : ++guardDirection;
+function updateGuardDirection(prevGuardDirection) {
+    return prevGuardDirection + 1 > 3 ? 0 : ++prevGuardDirection;
 }
 
 function findStartingPos(output) {
@@ -55,69 +37,97 @@ function findStartingPos(output) {
     }
 }
 
-function walkLines() {
-    for ( let x = currPos[0], y = currPos[1]; x >= 0 && x < maxX && y >= 0 && y < maxY;) {
-        currPos = [x, y];
-        let deltaX = directionDelta[guardDirection][0];
-        let deltaY = directionDelta[guardDirection][1];
-        x = x + deltaX;
-        y = y + deltaY;
-        const nextSpot = inputP1?.[y]?.[x];
-        if (nextSpot === undefined) {
-            return false;
-        }
-        if (nextSpot === '#') {
-            updateGuardDirection();
+function hasLoopingPattern(array) {
+    // Thank you ChatGPT
+    for (let patternLength = 4; patternLength <= Math.floor(array.length / 2); patternLength++) {
+        const pattern = array.slice(-patternLength); // Get the last potential pattern
+
+        const previousSegment = array.slice(-2 * patternLength, -patternLength);
+
+        if (pattern.join() === previousSegment.join()) {
             return true;
         }
-        inputP1[y][x] = 'X';
+    }
+    return false;
+}
+
+
+function walkLines(grid) {
+    let guardDirection = 0;
+    for (let x = startPos[0], y = startPos[1]; x >= 0 && x < maxX && y >= 0 && y < maxY;) {
+        let deltaX = directionDelta[guardDirection][0];
+        let deltaY = directionDelta[guardDirection][1];
+        const nextSpot = grid?.[y + deltaY]?.[x + deltaX];
+        if (nextSpot === undefined) {
+            return countVisitedSpots(grid);
+        }
+        if (nextSpot === '#') {
+            guardDirection = updateGuardDirection(guardDirection);
+            continue;
+        }
+        x = x + deltaX;
+        y = y + deltaY;
+        grid[y][x] = 'X';
     }
 }
 
-let inBoundsP1 = true;
-
-while (inBoundsP1) {
-    inBoundsP1 = walkLines();
+function walkLinesFindLoop(grid) {
+    let guardDirection = 0;
+    let lastTurns = [];
+    for (let x = startPos[0], y = startPos[1]; x >= 0 && x < maxX && y >= 0 && y < maxY;) {
+        let deltaX = directionDelta[guardDirection][0];
+        let deltaY = directionDelta[guardDirection][1];
+        const nextSpot = grid?.[y + deltaY]?.[x + deltaX];
+        if (nextSpot === undefined) {
+            return 0;
+        }
+        if (nextSpot === '#' || nextSpot === '@') {
+            guardDirection = updateGuardDirection(guardDirection);
+            lastTurns.push(`${x},${y}`);
+            if (lastTurns.length > 4 && hasLoopingPattern(lastTurns)) {
+                return 1;
+            }
+            continue;
+        }
+        x = x + deltaX;
+        y = y + deltaY;
+        grid[y][x] = 'X';
+    }
+    return 0;
 }
 
-// console.log(displayGrid(inputP1))
-console.log(countVisitedSpots(inputP1))
+
+const baseGrid = processInput(realInput);
+const gridPartOne = processInput(realInput);
+const startPos = findStartingPos(baseGrid);
+
+//0 - North/Up, 1 - East/Right, 2 - South/down, 3 - West/Left
+const directionDelta = [
+    [0, -1],
+    [1, 0],
+    [0, 1],
+    [-1, 0]
+]
+
+const maxX = baseGrid[0].length;
+const maxY = baseGrid.length;
+
+console.log('Part 1: ', walkLines(gridPartOne))
 
 // Part 2
-const inputP2 = processInput(testInput);
-guardDirection = 0; //0 - North/Up, 1 - East/Right, 2 - South/down, 3 - West/Left
-currPos = findStartingPos(inputP2);
-
-function walkLinesDetectLoops() {
-    for ( let x = currPos[0], y = currPos[1]; x >= 0 && x < maxX && y >= 0 && y < maxY;) {
-        currPos = [x, y];
-        let deltaX = directionDelta[guardDirection][0];
-        let deltaY = directionDelta[guardDirection][1];
-        x = x + deltaX;
-        y = y + deltaY;
-        const nextSpot = inputP2?.[y]?.[x];
-        if (nextSpot === undefined) {
-            return false;
-        }
-        if (nextSpot === '#') {
-            lastTurns.push(currPos.join());
-            updateGuardDirection();
-            return true;
-        }
-        inputP2[y][x] = 'X';
-    }
-}
-
-let inBoundsP2 = true;
-const lastTurns = [];
 let loopOptions = 0;
 
-while (inBoundsP2) {
-    inBoundsP2 = walkLinesDetectLoops();
-    if (lastTurns.length === 5) {
-        if (lastTurns[0] === lastTurns[4]) {
-            loopOptions++;
-            break;
+for (let i = 0; i < baseGrid.length; i++) {
+    process.stdout.write(`\r${Math.round(i / baseGrid.length * 100)}`)
+    const line = baseGrid[i];
+    for (let ii = 0; ii < line.length; ii++) {
+        const position = line[ii];
+        if (position == '.') {
+            const newGrid = processInput(realInput);
+            newGrid[i][ii] = '@';
+            loopOptions += walkLinesFindLoop(newGrid);
         }
     }
 }
+
+console.log('\n', loopOptions)
