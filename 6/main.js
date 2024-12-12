@@ -2,17 +2,6 @@ import fetchInput from "../fetch-input.mjs";
 
 const realInput = await fetchInput(2024, 6);
 
-const testInput = `....#.....
-.........#
-..........
-..#.......
-.......#..
-..........
-.#..^.....
-........#.
-#.........
-......#...`
-
 function processInput(input) {
     return input.trim().split(/\r?\n/).map(line => line.split(''));
 }
@@ -36,21 +25,6 @@ function findStartingPos(output) {
         }
     }
 }
-
-function hasLoopingPattern(array) {
-    // Thank you ChatGPT
-    for (let patternLength = 4; patternLength <= Math.floor(array.length / 2); patternLength++) {
-        const pattern = array.slice(-patternLength); // Get the last potential pattern
-
-        const previousSegment = array.slice(-2 * patternLength, -patternLength);
-
-        if (pattern.join() === previousSegment.join()) {
-            return true;
-        }
-    }
-    return false;
-}
-
 
 function walkLines(grid) {
     let guardDirection = 0;
@@ -83,10 +57,10 @@ function walkLinesFindLoop(grid) {
         }
         if (nextSpot === '#' || nextSpot === '@') {
             guardDirection = updateGuardDirection(guardDirection);
-            lastTurns.push(`${x},${y}`);
-            if (lastTurns.length > 4 && hasLoopingPattern(lastTurns)) {
+            if (lastTurns.includes(`${x},${y},${deltaX},${deltaY}`)) {
                 return 1;
             }
+            lastTurns.push(`${x},${y},${deltaX},${deltaY}`);
             continue;
         }
         x = x + deltaX;
@@ -122,7 +96,7 @@ for (let i = 0; i < baseGrid.length; i++) {
     const line = baseGrid[i];
     for (let ii = 0; ii < line.length; ii++) {
         const position = line[ii];
-        if (position == '.') {
+        if (position === '.') {
             const newGrid = processInput(realInput);
             newGrid[i][ii] = '@';
             loopOptions += walkLinesFindLoop(newGrid);
